@@ -1,50 +1,46 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+Version change: unversioned template -> 1.0.0
+Modified principles: None; this is the initial ratification.
+Added sections: Delivery Gates; End-to-End Tests.
+Removed sections: None.
+Follow-up TODOs: None.
+-->
+# Invoice Approval Demo App Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Domain-Owned Business Rules
+Business rules MUST reside only in `InvoiceApp.Domain`; API controllers MUST NOT decide policy.
+This keeps business decisions consistent across entry points.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Rule-Complete Unit Tests
+Every rule MUST have a unit test, including negative rules. A test counts only if it would fail
+when the rule it names is broken. This makes tests evidence of behavior, not just execution.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. State-Preserving Refusals
+A refused operation MUST leave domain state unchanged. This prevents failed requests from
+partially applying a decision.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Server-Authoritative Roles
+The server MUST derive the approver's role from the signed-in session and MUST NOT trust a role
+supplied in the request body. This keeps authorization under server control.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+## Delivery Gates
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Every commit MUST build, pass tests, and explain what changed and why.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+## End-to-End Tests
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+End-to-end tests MUST use page objects and role-based locators such as `getByRole` and
+`getByLabel`; CSS and XPath selectors MUST NOT be used.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Amendments MUST be made as reviewed changes to this constitution with a stated rationale.
+Reviewers MUST verify compliance and require tests for changed rules. Versioning follows
+semantic versioning: MAJOR for backward-incompatible governance changes, MINOR for new or
+materially expanded principles or sections, and PATCH for clarifications and non-semantic
+refinements.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-10-27 | **Last Amended**: 2026-10-27

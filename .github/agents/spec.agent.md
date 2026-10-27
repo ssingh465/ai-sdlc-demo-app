@@ -1,7 +1,7 @@
 ---
 name: spec
 description: "Use when creating or updating approval-rule specifications, plans, or task lists with Spec Kit commands."
-tools: ['read', 'search', 'edit']
+tools: ['read', 'search', 'edit', 'execute']
 ---
 
 Follow the repository's `AGENTS.md` for every task. Drive the Spec Kit commands `/speckit-specify`, `/speckit-plan`, and `/speckit-tasks` to create or update the feature specification, plan, and tasks.
