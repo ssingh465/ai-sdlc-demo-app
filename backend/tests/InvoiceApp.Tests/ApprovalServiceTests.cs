@@ -25,26 +25,6 @@ public class ApprovalServiceTests
         return (new ApprovalService(repository), repository);
     }
 
-    private sealed record InvoiceSnapshot(
-        string Id,
-        string CustomerName,
-        decimal Amount,
-        InvoiceStatus Status,
-        DateTime CreatedAt,
-        string? DecidedBy,
-        DateTime? DecidedAt,
-        string? DecisionNote);
-
-    private static InvoiceSnapshot Snapshot(Invoice invoice) =>
-        new(invoice.Id, invoice.CustomerName, invoice.Amount, invoice.Status, invoice.CreatedAt,
-            invoice.DecidedBy, invoice.DecidedAt, invoice.DecisionNote);
-
-    private static void AssertUnchanged(InvoiceSnapshot before, Invoice? after)
-    {
-        Assert.NotNull(after);
-        Assert.Equal(before, Snapshot(after));
-    }
-
     [Fact]
     public void Submit_MovesDraftToPendingApproval()
     {
@@ -172,13 +152,23 @@ public class ApprovalServiceTests
     }
 
     [Fact]
-    public void Director_IsRefused_At500000_01_AndInvoiceUnchanged()
+    public void Above500000_At500000_01_DirectorApproval_IsFirstOnly_StaysPending()
     {
-        AssertRefusedWithoutChanges(
-            InvoiceWith("INV-1", InvoiceStatus.PendingApproval, 500000.01m),
-            ApprovalRole.Director,
-            "demo.director",
-            "Director limit is 500,000; invoice is 500,000.01.");
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval, 500000.01m);
+        invoice.DecidedBy = null;
+        invoice.DecidedAt = null;
+        var (service, repository) = ServiceFor(invoice);
+
+        var result = service.Approve("INV-1", "demo.director", ApprovalRole.Director);
+
+        Assert.Equal(InvoiceStatus.PendingApproval, result.Status);
+        Assert.Null(result.DecidedBy);
+        Assert.Null(result.DecidedAt);
+        var approval = Assert.Single(result.Approvals);
+        Assert.Equal("demo.director", approval.Approver);
+        Assert.Equal(ApprovalRole.Director, approval.Role);
+        Assert.NotEqual(default, approval.At);
+        Assert.Equal(1, repository.UpdateCalls);
     }
 
     [Fact]
@@ -189,6 +179,136 @@ public class ApprovalServiceTests
             ApprovalRole.Admin,
             "demo.admin",
             "Admin has no approval authority");
+    }
+
+    [Fact]
+    public void Above500000_FirstApprovalByManager_StaysPendingWithOneApproval()
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval, 650000m);
+        invoice.DecidedBy = null;
+        invoice.DecidedAt = null;
+        var (service, repository) = ServiceFor(invoice);
+
+        var result = service.Approve("INV-1", "demo.manager", ApprovalRole.Manager);
+
+        Assert.Equal(InvoiceStatus.PendingApproval, result.Status);
+        Assert.Null(result.DecidedBy);
+        Assert.Null(result.DecidedAt);
+        var approval = Assert.Single(result.Approvals);
+        Assert.Equal("demo.manager", approval.Approver);
+        Assert.Equal(ApprovalRole.Manager, approval.Role);
+        Assert.NotEqual(default, approval.At);
+        Assert.Equal(1, repository.UpdateCalls);
+    }
+
+    [Fact]
+    public void Above500000_FirstApprovalByDirector_StaysPendingWithOneApproval()
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval, 650000m);
+        invoice.DecidedBy = null;
+        invoice.DecidedAt = null;
+        var (service, repository) = ServiceFor(invoice);
+
+        var result = service.Approve("INV-1", "demo.director", ApprovalRole.Director);
+
+        Assert.Equal(InvoiceStatus.PendingApproval, result.Status);
+        Assert.Null(result.DecidedBy);
+        Assert.Null(result.DecidedAt);
+        var approval = Assert.Single(result.Approvals);
+        Assert.Equal("demo.director", approval.Approver);
+        Assert.Equal(ApprovalRole.Director, approval.Role);
+        Assert.NotEqual(default, approval.At);
+        Assert.Equal(1, repository.UpdateCalls);
+    }
+
+    [Fact]
+    public void Above500000_SecondApprovalByDifferentDirector_Approves()
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval, 650000m);
+        invoice.DecidedBy = null;
+        invoice.DecidedAt = null;
+        var (service, repository) = ServiceFor(invoice);
+        service.Approve("INV-1", "demo.manager", ApprovalRole.Manager);
+
+        var result = service.Approve("INV-1", "demo.director", ApprovalRole.Director);
+
+        Assert.Equal(InvoiceStatus.Approved, result.Status);
+        Assert.Equal("demo.director", result.DecidedBy);
+        Assert.NotNull(result.DecidedAt);
+        Assert.Collection(result.Approvals,
+            first => Assert.Equal(("demo.manager", ApprovalRole.Manager), (first.Approver, first.Role)),
+            second => Assert.Equal(("demo.director", ApprovalRole.Director), (second.Approver, second.Role)));
+        Assert.Equal(2, repository.UpdateCalls);
+    }
+
+    [Fact]
+    public void Above500000_SecondApprovalByManager_IsRefused_AndInvoiceUnchanged()
+    {
+        AssertRefusedAfterFirstApproval(
+            "demo.director",
+            ApprovalRole.Director,
+            "demo.manager",
+            ApprovalRole.Manager,
+            "The second approval above 500,000 must come from a Director.");
+    }
+
+    [Fact]
+    public void Above500000_SameDirectorTwice_IsRefused_AndInvoiceUnchanged()
+    {
+        AssertRefusedAfterFirstApproval(
+            "demo.director",
+            ApprovalRole.Director,
+            "demo.director",
+            ApprovalRole.Director,
+            "A second approver is required; the same user cannot approve twice.");
+    }
+
+    [Fact]
+    public void Above500000_SameUserDifferentCasing_IsRefused_AndInvoiceUnchanged()
+    {
+        AssertRefusedAfterFirstApproval(
+            "demo.director",
+            ApprovalRole.Director,
+            "Demo.Director",
+            ApprovalRole.Director,
+            "A second approver is required; the same user cannot approve twice.");
+    }
+
+    [Fact]
+    public void Above500000_AdminAsSecond_IsRefused_AndInvoiceUnchanged()
+    {
+        AssertRefusedAfterFirstApproval(
+            "demo.director",
+            ApprovalRole.Director,
+            "demo.admin",
+            ApprovalRole.Admin,
+            "Admin has no approval authority");
+    }
+
+    [Fact]
+    public void Above500000_ManagerFirstThenSameManagerAgain_IsRefused_AndInvoiceUnchanged()
+    {
+        AssertRefusedAfterFirstApproval(
+            "demo.manager",
+            ApprovalRole.Manager,
+            "DEMO.MANAGER",
+            ApprovalRole.Manager,
+            "A second approver is required; the same user cannot approve twice.");
+    }
+
+    [Fact]
+    public void AtOrBelow500000_Approval_RecordsExactlyOneApprovalRecord()
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval, 500000m);
+        var service = ServiceFor(invoice).Service;
+
+        var result = service.Approve("INV-1", "demo.director", ApprovalRole.Director);
+
+        Assert.Equal(InvoiceStatus.Approved, result.Status);
+        var approval = Assert.Single(result.Approvals);
+        Assert.Equal("demo.director", approval.Approver);
+        Assert.Equal(ApprovalRole.Director, approval.Role);
+        Assert.NotEqual(default, approval.At);
     }
 
     [Fact]
@@ -231,15 +351,37 @@ public class ApprovalServiceTests
         string approver,
         string expectedMessage)
     {
-        var before = Snapshot(invoice);
+        var before = InvoiceSnapshot.Of(invoice);
         var (service, repository) = ServiceFor(invoice);
 
         var exception = Assert.Throws<ApprovalRefusedException>(
             () => service.Approve(invoice.Id, approver, role));
 
         Assert.Equal(expectedMessage, exception.Message);
-        AssertUnchanged(before, repository.GetById(invoice.Id));
+        InvoiceSnapshot.AssertUnchanged(before, repository.GetById(invoice.Id));
         Assert.Equal(0, repository.UpdateCalls);
         return exception;
+    }
+
+    private static void AssertRefusedAfterFirstApproval(
+        string firstApprover,
+        ApprovalRole firstRole,
+        string secondApprover,
+        ApprovalRole secondRole,
+        string expectedMessage)
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval, 650000m);
+        invoice.DecidedBy = null;
+        invoice.DecidedAt = null;
+        var (service, repository) = ServiceFor(invoice);
+        service.Approve(invoice.Id, firstApprover, firstRole);
+        var before = InvoiceSnapshot.Of(invoice);
+
+        var exception = Assert.Throws<ApprovalRefusedException>(
+            () => service.Approve(invoice.Id, secondApprover, secondRole));
+
+        Assert.Equal(expectedMessage, exception.Message);
+        InvoiceSnapshot.AssertUnchanged(before, repository.GetById(invoice.Id));
+        Assert.Equal(1, repository.UpdateCalls);
     }
 }

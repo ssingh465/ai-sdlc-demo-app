@@ -4,7 +4,7 @@ namespace InvoiceApp.Domain;
 
 /// <summary>
 /// Moves an invoice through its lifecycle: Draft -> PendingApproval -> Approved or Rejected.
-/// One invoice at a time, decided as a whole by a single approver.
+/// High-value invoices require approval from two distinct users.
 /// </summary>
 public class ApprovalService
 {
@@ -35,10 +35,42 @@ public class ApprovalService
         var invoice = Find(invoiceId);
         EnsurePending(invoice);
 
-        var limit = ApprovalPolicy.LimitFor(role);
         if (role == ApprovalRole.Admin)
         {
             throw new ApprovalRefusedException("Admin has no approval authority");
+        }
+
+        var limit = ApprovalPolicy.LimitFor(role);
+        if (invoice.Amount > 500000m)
+        {
+            if (invoice.Approvals.Count > 0)
+            {
+                var firstApproval = invoice.Approvals[0];
+                if (string.Equals(firstApproval.Approver, approver, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ApprovalRefusedException(
+                        "A second approver is required; the same user cannot approve twice.");
+                }
+
+                if (role != ApprovalRole.Director)
+                {
+                    throw new ApprovalRefusedException(
+                        "The second approval above 500,000 must come from a Director.");
+                }
+
+                var secondApprovalAt = DateTime.UtcNow;
+                invoice.Approvals.Add(new ApprovalRecord(approver, role, secondApprovalAt));
+                invoice.Status = InvoiceStatus.Approved;
+                invoice.DecidedBy = approver;
+                invoice.DecidedAt = secondApprovalAt;
+                _repository.Update(invoice);
+                return invoice;
+            }
+
+            var firstApprovalAt = DateTime.UtcNow;
+            invoice.Approvals.Add(new ApprovalRecord(approver, role, firstApprovalAt));
+            _repository.Update(invoice);
+            return invoice;
         }
 
         if (limit is decimal approvalLimit && invoice.Amount > approvalLimit)
@@ -49,9 +81,11 @@ public class ApprovalService
                 $"{role} limit is {formattedLimit}; invoice is {formattedAmount}.");
         }
 
+        var approvalAt = DateTime.UtcNow;
+        invoice.Approvals.Add(new ApprovalRecord(approver, role, approvalAt));
         invoice.Status = InvoiceStatus.Approved;
         invoice.DecidedBy = approver;
-        invoice.DecidedAt = DateTime.UtcNow;
+        invoice.DecidedAt = approvalAt;
         _repository.Update(invoice);
         return invoice;
     }

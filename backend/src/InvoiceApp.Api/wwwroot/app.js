@@ -74,6 +74,9 @@
 
       return el('li', {},
         el('span', {}, `${invoice.id} · ${invoice.customerName} · ${money.format(invoice.amount)}`),
+        ...(invoice.status === 'PendingApproval' && invoice.approvals.length === 1
+          ? [el('span', {}, '1 of 2 approvals')]
+          : []),
         el('span', {}, approve),
         el('div', { class: 'reject-row' }, reason, reject));
     }));

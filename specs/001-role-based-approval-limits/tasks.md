@@ -58,15 +58,15 @@ unchanged invoice state for every refusal. The pending UI is verified in Phase 3
 
 ### Tests for Phase 2
 
-- [ ] T014 [US2] Add service tests for first approval by Manager and Director, second approval by a distinct Director, refusal of a non-Director second approver, same-user repeat with different username casing, and complete unchanged invoice snapshots plus no repository update on each refusal in `backend/tests/InvoiceApp.Tests/ApprovalServiceTests.cs`.
+- [x] T014 [US2] Add service tests for first approval by Manager and Director, second approval by a distinct Director, refusal of a non-Director second approver, same-user repeat with different username casing, and complete unchanged invoice snapshots plus no repository update on each refusal in `backend/tests/InvoiceApp.Tests/ApprovalServiceTests.cs`.
 
 ### Implementation for Phase 2
 
-- [ ] T015 [US2] Add immutable `ApprovalRecord(string Approver, ApprovalRole Role, DateTime At)` in `backend/src/InvoiceApp.Domain/ApprovalRecord.cs`.
-- [ ] T016 [US2] Add an initialized `List<ApprovalRecord>` named `Approvals` to `Invoice` in `backend/src/InvoiceApp.Domain/Invoice.cs`.
-- [ ] T017 [US2] Implement high-value approval validation and transitions: first approval by Manager or Director records one approval and leaves PendingApproval; second approval requires a Director with a case-insensitively distinct username; validate all refusal conditions before changing fields or updating the repository in `backend/src/InvoiceApp.Domain/ApprovalService.cs`.
-- [ ] T018 [US2] Display "1 of 2 approvals" for a pending invoice above 500,000 with exactly one approval in `backend/src/InvoiceApp.Api/wwwroot/app.js`.
-- [ ] T019 [US2] Run `dotnet test backend/InvoiceApp.sln` and resolve failures before completing Phase 2; record the verification against `backend/InvoiceApp.sln`.
+- [x] T015 [US2] Add immutable `ApprovalRecord(string Approver, ApprovalRole Role, DateTime At)` in `backend/src/InvoiceApp.Domain/ApprovalRecord.cs`.
+- [x] T016 [US2] Add an initialized `List<ApprovalRecord>` named `Approvals` to `Invoice` in `backend/src/InvoiceApp.Domain/Invoice.cs`.
+- [x] T017 [US2] Implement high-value approval validation and transitions: first approval by Manager or Director records one approval and leaves PendingApproval; second approval requires a Director with a case-insensitively distinct username; validate all refusal conditions before changing fields or updating the repository in `backend/src/InvoiceApp.Domain/ApprovalService.cs`.
+- [x] T018 [US2] Display "1 of 2 approvals" for a pending invoice above 500,000 with exactly one approval in `backend/src/InvoiceApp.Api/wwwroot/app.js`.
+- [x] T019 [US2] Run `dotnet test backend/InvoiceApp.sln` and resolve failures before completing Phase 2; record the verification against `backend/InvoiceApp.sln`.
 
 **Phase 2 checkpoint**: Solution tests pass; the high-value workflow records distinct
 approvers and keeps first-approval invoices pending with the required UI text.
