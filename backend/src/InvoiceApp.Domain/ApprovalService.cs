@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace InvoiceApp.Domain;
 
 /// <summary>
@@ -28,10 +30,24 @@ public class ApprovalService
         return invoice;
     }
 
-    public Invoice Approve(string invoiceId, string approver)
+    public Invoice Approve(string invoiceId, string approver, ApprovalRole role)
     {
         var invoice = Find(invoiceId);
         EnsurePending(invoice);
+
+        var limit = ApprovalPolicy.LimitFor(role);
+        if (role == ApprovalRole.Admin)
+        {
+            throw new ApprovalRefusedException("Admin has no approval authority");
+        }
+
+        if (limit is decimal approvalLimit && invoice.Amount > approvalLimit)
+        {
+            var formattedLimit = approvalLimit.ToString("#,##0.##", CultureInfo.InvariantCulture);
+            var formattedAmount = invoice.Amount.ToString("#,##0.##", CultureInfo.InvariantCulture);
+            throw new ApprovalRefusedException(
+                $"{role} limit is {formattedLimit}; invoice is {formattedAmount}.");
+        }
 
         invoice.Status = InvoiceStatus.Approved;
         invoice.DecidedBy = approver;

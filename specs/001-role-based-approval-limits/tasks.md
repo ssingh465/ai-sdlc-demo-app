@@ -27,22 +27,22 @@ amount-unlimited rejection covered.
 
 ### Tests for Phase 1
 
-- [ ] T001 [P] [US1] Add `ApprovalPolicyTests` for Manager limit 50,000, Director limit 500,000, and Admin null limit in `backend/tests/InvoiceApp.Tests/ApprovalPolicyTests.cs`.
-- [ ] T002 [P] [US1] Update `ApprovalServiceTests` for permitted limits, 50,000 and 50,000.01 boundaries, the 500,000 Director boundary, invariant formatted refusal reasons, Admin refusal, complete unchanged invoice snapshots on refusals, and rejection of an invoice above 500,000 without an amount limit in `backend/tests/InvoiceApp.Tests/ApprovalServiceTests.cs`.
-- [ ] T003 [US3] Add a project reference to the API project so authenticated-session controller behavior can be unit tested in `backend/tests/InvoiceApp.Tests/InvoiceApp.Tests.csproj`.
-- [ ] T004 [US3] Add `ApprovalsControllerTests` proving the controller uses the role on `UserSession` for approval decisions and refuses an Admin session; verify the action accepts no client-supplied role in `backend/tests/InvoiceApp.Tests/ApprovalsControllerTests.cs`.
+- [x] T001 [P] [US1] Add `ApprovalPolicyTests` for Manager limit 50,000, Director limit 500,000, and Admin null limit in `backend/tests/InvoiceApp.Tests/ApprovalPolicyTests.cs`.
+- [x] T002 [P] [US1] Update `ApprovalServiceTests` for permitted limits, 50,000 and 50,000.01 boundaries, the 500,000 Director boundary, invariant formatted refusal reasons, Admin refusal, complete unchanged invoice snapshots on refusals, and rejection of an invoice above 500,000 without an amount limit in `backend/tests/InvoiceApp.Tests/ApprovalServiceTests.cs`.
+- [x] T003 [US3] Add a project reference to the API project so authenticated-session controller behavior can be unit tested in `backend/tests/InvoiceApp.Tests/InvoiceApp.Tests.csproj`.
+- [x] T004 [US3] Add `ApprovalsControllerTests` proving the controller uses the role on `UserSession` for approval decisions and refuses an Admin session; verify the action accepts no client-supplied role in `backend/tests/InvoiceApp.Tests/ApprovalsControllerTests.cs`.
 
 ### Implementation for Phase 1
 
-- [ ] T005 [P] [US1] Define `ApprovalRole { Manager, Director, Admin }` in `backend/src/InvoiceApp.Domain/ApprovalRole.cs`.
-- [ ] T006 [US1] Implement `ApprovalPolicy.LimitFor(ApprovalRole role)` with 50,000 for Manager, 500,000 for Director, and null for Admin in `backend/src/InvoiceApp.Domain/ApprovalPolicy.cs`.
-- [ ] T007 [P] [US1] Add `ApprovalRefusedException : InvalidOperationException` in `backend/src/InvoiceApp.Domain/ApprovalRefusedException.cs`.
-- [ ] T008 [P] [US1] Track repository update calls in `FakeInvoiceRepository` so refusal tests assert no persistence in `backend/tests/InvoiceApp.Tests/FakeInvoiceRepository.cs`.
-- [ ] T009 [US1] Change `ApprovalService.Approve` to accept invoice ID, approver, and `ApprovalRole`; check pending status, Admin authority, and applicable limits before any invoice mutation or repository update, formatting amount reasons with `#,##0.##` and invariant culture in `backend/src/InvoiceApp.Domain/ApprovalService.cs`.
-- [ ] T010 [US3] Restrict approvals to Manager, Director, and Admin and map `HttpContext.GetSession().Role` to `ApprovalRole` before calling the service; do not read approval role from the request body in `backend/src/InvoiceApp.Api/Controllers/ApprovalsController.cs`.
-- [ ] T011 [P] [US3] Configure `demo.manager` as Manager, `demo.director` and `demo.director2` as Director, and `demo.admin` as Admin in `backend/src/InvoiceApp.Api/appsettings.json`.
-- [ ] T012 [P] [US3] Seed pending invoices for 12,500, 72,500, and 650,000 in `backend/src/InvoiceApp.Api/InMemoryInvoiceRepository.cs`.
-- [ ] T013 [US1] Run `dotnet test backend/InvoiceApp.sln` and resolve failures before completing Phase 1; record the verification against `backend/InvoiceApp.sln`.
+- [x] T005 [P] [US1] Define `ApprovalRole { Manager, Director, Admin }` in `backend/src/InvoiceApp.Domain/ApprovalRole.cs`.
+- [x] T006 [US1] Implement `ApprovalPolicy.LimitFor(ApprovalRole role)` with 50,000 for Manager, 500,000 for Director, and null for Admin in `backend/src/InvoiceApp.Domain/ApprovalPolicy.cs`.
+- [x] T007 [P] [US1] Add `ApprovalRefusedException : InvalidOperationException` in `backend/src/InvoiceApp.Domain/ApprovalRefusedException.cs`.
+- [x] T008 [P] [US1] Track repository update calls in `FakeInvoiceRepository` so refusal tests assert no persistence in `backend/tests/InvoiceApp.Tests/FakeInvoiceRepository.cs`.
+- [x] T009 [US1] Change `ApprovalService.Approve` to accept invoice ID, approver, and `ApprovalRole`; check pending status, Admin authority, and applicable limits before any invoice mutation or repository update, formatting amount reasons with `#,##0.##` and invariant culture in `backend/src/InvoiceApp.Domain/ApprovalService.cs`.
+- [x] T010 [US3] Restrict approvals to Manager, Director, and Admin and map `HttpContext.GetSession().Role` to `ApprovalRole` before calling the service; do not read approval role from the request body in `backend/src/InvoiceApp.Api/Controllers/ApprovalsController.cs`.
+- [x] T011 [P] [US3] Configure `demo.manager` as Manager, `demo.director` and `demo.director2` as Director, and `demo.admin` as Admin in `backend/src/InvoiceApp.Api/appsettings.json`.
+- [x] T012 [P] [US3] Seed pending invoices for 12,500, 72,500, and 650,000 in `backend/src/InvoiceApp.Api/InMemoryInvoiceRepository.cs`.
+- [x] T013 [US1] Run `dotnet test backend/InvoiceApp.sln` and resolve failures before completing Phase 1; record the verification against `backend/InvoiceApp.sln`.
 
 **Phase 1 checkpoint**: Solution tests pass; single-approver role limits, Admin refusal,
 session-derived roles, refusal immutability, rejection, and demo configuration are covered.
