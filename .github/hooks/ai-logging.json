@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/log-interaction.mjs sessionStart",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ],
+    "userPromptSubmitted": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/log-interaction.mjs userPromptSubmitted",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/log-interaction.mjs preToolUse",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/log-interaction.mjs postToolUse",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ],
+    "subagentStart": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/log-interaction.mjs subagentStart",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ],
+    "subagentStop": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/log-interaction.mjs subagentStop",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/log-interaction.mjs agentStop",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ],
+    "sessionEnd": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/log-interaction.mjs sessionEnd",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
