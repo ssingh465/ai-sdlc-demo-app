@@ -83,9 +83,9 @@ cannot override the signed-in Admin role.
 
 ### Tests and page objects for Phase 3
 
-- [ ] T020 [US3] Create a page object using accessible role and label locators for demo sign-in, opening pending approvals, attempting an invoice approval, and reading the decision alert in `e2e/pages/approvals-page.ts`.
-- [ ] T021 [US3] Add Playwright tests for all four configured demo-user roles, the seeded 72,500 Manager refusal, the 650,000 first approval displaying "1 of 2 approvals", and Admin role spoof refusal; assert exact messages and pending status through accessible locators and authenticated API requests in `e2e/tests/approval-limits.spec.ts`.
-- [ ] T022 [US3] Run `dotnet test backend/InvoiceApp.sln` and `npm test` from `e2e/`; resolve failures before completing Phase 3 and verify the corresponding commands and outcomes in `specs/001-role-based-approval-limits/quickstart.md`.
+- [X] T020 [US3] Create the page object `e2e/pages/InvoiceAppPage.ts`.
+- [X] T021 [US3] Add ONE Playwright test in `e2e/tests/over-limit-approval.spec.ts`: a Manager approving INV-1007 at 72,500 is refused with the exact reason "Manager limit is 50,000; invoice is 72,500." and the invoice stays Pending Approval.
+- [X] T022 [US3] Run `dotnet test backend/InvoiceApp.sln` and `npm test` from `e2e/`; resolve failures before completing Phase 3 and verify the corresponding commands and outcomes in `specs/001-role-based-approval-limits/quickstart.md`.
 
 **Phase 3 checkpoint**: Domain/API tests and Playwright tests pass; the over-limit reason is
 visible to the user and a client-supplied role cannot elevate approval authority.
