@@ -29,10 +29,12 @@ public class ApprovalServiceTests
     public void Submit_MovesDraftToPendingApproval()
     {
         var invoice = InvoiceWith("INV-1", InvoiceStatus.Draft);
+        var (service, repository) = ServiceFor(invoice);
 
-        var result = ServiceFor(invoice).Service.Submit("INV-1");
+        var result = service.Submit("INV-1");
 
         Assert.Equal(InvoiceStatus.PendingApproval, result.Status);
+        Assert.Equal(1, repository.UpdateCalls);
     }
 
     [Fact]
@@ -92,6 +94,25 @@ public class ApprovalServiceTests
         Assert.Equal(InvoiceStatus.Rejected, result.Status);
         Assert.Equal("demo.manager", result.DecidedBy);
         Assert.Equal("Duplicate invoice", result.DecisionNote);
+    }
+
+    [Fact]
+    public void Reject_ApprovedInvoice_ThrowsAndLeavesInvoiceUnchanged()
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.Approved);
+        invoice.Approvals.Add(new ApprovalRecord(
+            "demo.director",
+            ApprovalRole.Director,
+            new DateTime(2026, 1, 4, 3, 4, 5, DateTimeKind.Utc)));
+        var before = InvoiceSnapshot.Of(invoice);
+        var (service, repository) = ServiceFor(invoice);
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => service.Reject(invoice.Id, "demo.manager", "No longer needed"));
+
+        Assert.Equal("Invoice INV-1 is Approved; only pending invoices can be decided.", exception.Message);
+        InvoiceSnapshot.AssertUnchanged(before, repository.GetById(invoice.Id));
+        Assert.Equal(0, repository.UpdateCalls);
     }
 
     [Fact]
