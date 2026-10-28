@@ -24,14 +24,14 @@ public class ApprovalsControllerTests
         controller.Request.QueryString = new QueryString("?role=Director");
         controller.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("""{"role":"Director"}"""));
         controller.Request.ContentType = "application/json";
-        var before = Snapshot(invoice);
+        var before = InvoiceSnapshot.Of(invoice);
 
         var result = controller.Approve("INV-1");
 
         var conflict = Assert.IsType<ConflictObjectResult>(result.Result);
         Assert.Equal("Manager limit is 50,000; invoice is 72,500.",
             conflict.Value!.GetType().GetProperty("error")!.GetValue(conflict.Value));
-        AssertUnchanged(before, repository.GetById(invoice.Id));
+        InvoiceSnapshot.AssertUnchanged(before, repository.GetById(invoice.Id));
         Assert.Equal(0, repository.UpdateCalls);
     }
 
@@ -65,14 +65,14 @@ public class ApprovalsControllerTests
             Status = InvoiceStatus.PendingApproval
         };
         var (controller, repository) = ControllerFor(invoice, new UserSession("demo.admin", "Admin"));
-        var before = Snapshot(invoice);
+        var before = InvoiceSnapshot.Of(invoice);
 
         var result = controller.Approve("INV-1");
 
         var conflict = Assert.IsType<ConflictObjectResult>(result.Result);
         Assert.Equal("Admin has no approval authority",
             conflict.Value!.GetType().GetProperty("error")!.GetValue(conflict.Value));
-        AssertUnchanged(before, repository.GetById(invoice.Id));
+        InvoiceSnapshot.AssertUnchanged(before, repository.GetById(invoice.Id));
         Assert.Equal(0, repository.UpdateCalls);
     }
 
@@ -84,26 +84,6 @@ public class ApprovalsControllerTests
             .GetParameters();
 
         Assert.Collection(parameters, parameter => Assert.Equal("invoiceId", parameter.Name));
-    }
-
-    private sealed record InvoiceSnapshot(
-        string Id,
-        string CustomerName,
-        decimal Amount,
-        InvoiceStatus Status,
-        DateTime CreatedAt,
-        string? DecidedBy,
-        DateTime? DecidedAt,
-        string? DecisionNote);
-
-    private static InvoiceSnapshot Snapshot(Invoice invoice) =>
-        new(invoice.Id, invoice.CustomerName, invoice.Amount, invoice.Status, invoice.CreatedAt,
-            invoice.DecidedBy, invoice.DecidedAt, invoice.DecisionNote);
-
-    private static void AssertUnchanged(InvoiceSnapshot before, Invoice? after)
-    {
-        Assert.NotNull(after);
-        Assert.Equal(before, Snapshot(after));
     }
 
     private static (ApprovalsController Controller, FakeInvoiceRepository Repository) ControllerFor(

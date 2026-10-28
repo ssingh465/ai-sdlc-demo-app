@@ -14,6 +14,10 @@ public class ApprovalPolicyTests
         Assert.Equal(500000m, ApprovalPolicy.LimitFor(ApprovalRole.Director));
 
     [Fact]
+    public void TwoApproverThreshold_ReturnsDirectorLimit() =>
+        Assert.Equal(ApprovalPolicy.LimitFor(ApprovalRole.Director), ApprovalPolicy.TwoApproverThreshold);
+
+    [Fact]
     public void LimitFor_Admin_ReturnsNull() =>
         Assert.Null(ApprovalPolicy.LimitFor(ApprovalRole.Admin));
 }

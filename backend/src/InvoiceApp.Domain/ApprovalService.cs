@@ -41,7 +41,7 @@ public class ApprovalService
         }
 
         var limit = ApprovalPolicy.LimitFor(role);
-        if (invoice.Amount > 500000m)
+        if (invoice.Amount > ApprovalPolicy.TwoApproverThreshold)
         {
             if (invoice.Approvals.Count > 0)
             {

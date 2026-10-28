@@ -17,8 +17,34 @@ export class InvoiceAppPage {
     await this.page.getByRole('tab', { name: 'Approvals' }).click();
   }
 
+  async openInvoices(): Promise<void> {
+    await this.page.getByRole('tab', { name: 'Invoices' }).click();
+  }
+
   async approve(invoiceId: string): Promise<void> {
     await this.page.getByRole('button', { name: `Approve invoice ${invoiceId}` }).click();
+  }
+
+  invoiceRow(invoiceId: string) {
+    return this.page.getByRole('row').filter({ hasText: invoiceId });
+  }
+
+  async readInvoice(invoiceId: string): Promise<unknown> {
+    return this.page.evaluate(async (id) => {
+      const session = JSON.parse(sessionStorage.getItem('session') ?? 'null');
+      if (!session?.token) {
+        throw new Error('Signed-in session token is missing.');
+      }
+
+      const response = await fetch(`/api/invoices/${id}`, {
+        headers: { Authorization: 'Bearer ' + session.token },
+      });
+      if (!response.ok) {
+        throw new Error(`Invoice request failed (${response.status}).`);
+      }
+
+      return response.json();
+    }, invoiceId);
   }
 
   errorMessage() {
