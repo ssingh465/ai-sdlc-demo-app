@@ -6,7 +6,7 @@ Invoices above 500,000 need approvals from two distinct people, with the second 
 Approval rules are enforced in the Domain, and refused approvals leave the invoice unchanged.
 
 ## Demo video
-{{VIDEO_LINK}}
+[Watch the demo (about 10 minutes)](https://nagarro-my.sharepoint.com/:v:/p/shubhanshu_singh/IQCYNj-du25hTa5Qb4_vybEOAVsfZKDZJQrFC0ISBA6kwCg?e=jH16tv)
 
 ## How the agent was set up
 ### Context (AGENTS.md)
