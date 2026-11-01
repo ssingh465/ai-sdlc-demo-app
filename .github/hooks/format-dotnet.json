@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hooks": {
+    "agentStop": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/format-dotnet.mjs",
+        "cwd": ".",
+        "timeoutSec": 120
+      }
+    ]
+  }
+}
