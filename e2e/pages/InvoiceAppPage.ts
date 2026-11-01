@@ -13,6 +13,10 @@ export class InvoiceAppPage {
     await this.page.getByRole('button', { name: 'Sign in' }).click();
   }
 
+  async signOut(): Promise<void> {
+    await this.page.getByRole('button', { name: 'Sign out' }).click();
+  }
+
   async openApprovals(): Promise<void> {
     await this.page.getByRole('tab', { name: 'Approvals' }).click();
   }
